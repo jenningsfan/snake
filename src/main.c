@@ -1,13 +1,14 @@
 #include <gint/display.h>
 #include <gint/keyboard.h>
+#include <gint/rtc.h>
 #include <time.h>
 #include <stdlib.h>
 
 #define SIZE 10
 #define ROUND(x) ((x) / SIZE) * SIZE
 
-#define C_APPLE C_GREEN
-#define C_SNAKE C_RED
+#define C_APPLE C_RED
+#define C_SNAKE C_GREEN
 #define C_BG C_WHITE
 
 typedef struct {
@@ -17,6 +18,8 @@ typedef struct {
 
 coord_t apple = { 0, 0 };
 coord_t snake = { 0, 0 };
+coord_t direction = { 0, -10 };
+int score = 0;
 
 void dsquare(coord_t pos, int c) {
     drect(pos.x, pos.y, pos.x + SIZE - 1, pos.y + SIZE - 1, c);
@@ -35,10 +38,35 @@ int clamp(int val, int min, int max) {
 
 coord_t rand_pos() {
     int x = ROUND(rand() % (DWIDTH - SIZE));
-    int y = ROUND(rand() % (DHEIGHT - SIZE));
+    int y = clamp(ROUND(rand() % (DHEIGHT - SIZE)), 20, DHEIGHT);
     coord_t pos = { x, y };
 
     return pos;
+}
+
+int update() {
+    dsquare(snake, C_BG);
+    snake.x += direction.x;
+    snake.y += direction.y;
+
+    snake.x = clamp(snake.x, 0, DWIDTH);
+    snake.y = clamp(snake.y, 20, DHEIGHT);
+    
+    dsquare(snake, C_SNAKE);
+
+    if (snake.x == apple.x && snake.y == apple.y) {
+        score += 1;
+
+        apple = rand_pos();
+        dsquare(apple, C_APPLE);
+    }
+    
+    drect(0, 0, DWIDTH, 20, C_WHITE);
+    dprint(0, 0, C_BLACK, "Score: %i", score);
+    dprint(0, 10, C_BLACK, "AX: %i AY: %i SX: %i SY: %i", apple.x, apple.y, snake.x, snake.y);
+
+    dupdate();
+    return TIMER_CONTINUE;
 }
 
 int main(void)
@@ -47,46 +75,37 @@ int main(void)
 
     apple = rand_pos();
     snake = rand_pos();
-
+    
     dclear(C_BG);
     dsquare(apple, C_APPLE);
-    dsquare(snake, C_SNAKE);
-    dprint(0, 0, C_BLACK, "AX: %i AY: %i SX: %i SY: %i", apple.x, apple.y, snake.x, snake.y);
-    dupdate();
 
+    int (*functionPtr)();
+	functionPtr = &update;
+	gint_call_t callback = { .function = functionPtr};
+	rtc_periodic_enable(RTC_4Hz, callback);
 
     while (true) {
         key_event_t key = getkey();
         if (key.type == KEYEV_DOWN || key.type == KEYEV_HOLD) {
-            drect(0, 0, DWIDTH, 20, C_BG);
-            dsquare(snake, C_BG);
-
             switch (key.key) {
                 case KEY_UP:
-                    snake.y -= SIZE;
+                    direction.x = 0;
+                    direction.y = -SIZE;
                     break;
                 case KEY_DOWN:
-                    snake.y += SIZE;
+                    direction.x = 0;
+                    direction.y = SIZE;
                     break;
                 case KEY_LEFT:
-                    snake.x -= SIZE;
+                    direction.x = -SIZE;
+                    direction.y = 0;
                     break;
                 case KEY_RIGHT:
-                    snake.x += SIZE;
+                    direction.x = SIZE;
+                    direction.y = 0;
                     break;
             }
-
-            snake.x = clamp(snake.x, 0, DWIDTH);
-            snake.y = clamp(snake.y, 0, DHEIGHT);
-
-            if (snake.x == apple.x && snake.y == apple.y) {
-                apple = rand_pos();
-                dsquare(apple, C_APPLE);
-            }
-
-            dprint(0, 0, C_BLACK, "AX: %i AY: %i SX: %i SY: %i", apple.x, apple.y, snake.x, snake.y);
-            dsquare(snake, C_SNAKE);
-            dupdate();
+            update();
         }
     }
     return 1;
