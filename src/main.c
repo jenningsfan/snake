@@ -207,15 +207,15 @@ int update_play() {
         new_snake->next = NULL;
         new_snake->prev = back_snake;
         new_snake->pos = back_snake->pos;
-        new_snake->pos.x -= back_snake->old_pos.x;
-        new_snake->pos.y -= back_snake->old_pos.y;
+        new_snake->pos.x -= direction.x;
+        new_snake->pos.y -= direction.y;
         back_snake->next = new_snake;
     }
     
     
     drect(0, 0, DWIDTH, 10, C_BG);
     dprint(0, 0, C_BLACK, "Score: %i", score);
-    
+
     dsnake(&snake, C_SNAKE);
     dsquare(apple, C_APPLE);
     
