@@ -1,19 +1,15 @@
-eyes.png:
-  type: bopti-image
-  name: img_eyes
-
-party_hat/up.png:
+up.png:
   type: bopti-image
   name: party_hat_up
 
-party_hat/down.png:
+down.png:
   type: bopti-image
   name: party_hat_down
 
-party_hat/left.png:
+left.png:
   type: bopti-image
   name: party_hat_left
 
-party_hat/right.png:
+right.png:
   type: bopti-image
   name: party_hat_right

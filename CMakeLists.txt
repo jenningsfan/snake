@@ -19,6 +19,11 @@ set(ASSETS
   # ...
 )
 set(ASSETS_cg
+  assets-cg/eyes.png
+  assets-cg/party_hat/up.png
+  assets-cg/party_hat/down.png
+  assets-cg/party_hat/left.png
+  assets-cg/party_hat/right.png
   # ...
 )
 
