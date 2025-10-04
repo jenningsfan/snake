@@ -128,7 +128,6 @@ void dsnake(snake_t *snake, int c) {
             return;
         }
 
-
         dimage(start_snake->next->pos.x, start_snake->next->pos.y, &img_eyes);
     }
     else {
@@ -162,6 +161,16 @@ bool internal_collision(snake_t* snake) {
     return false;
 }
 
+bool apple_eaten(snake_t* snake, coord_t apple) {
+    for (snake_t* i = snake; i != NULL; i = i->next) {
+        if (coord_eq(i->pos, apple)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 int update_play() {
     if (state != STATE_PLAY) {
         return state == STATE_DEAD ? TIMER_STOP : TIMER_CONTINUE;
@@ -173,7 +182,7 @@ int update_play() {
     snake.pos.x += direction.x;
     snake.pos.y += direction.y;
     snake.pos.x = clamp(snake.pos.x, 0, DWIDTH);
-    snake.pos.y = clamp(snake.pos.y, 20, DHEIGHT);
+    snake.pos.y = clamp(snake.pos.y, 0, DHEIGHT);
     
     update_snake(snake.next);
     
@@ -185,9 +194,10 @@ int update_play() {
         return TIMER_STOP;
     }
     
-    if (snake.pos.x == apple.x && snake.pos.y == apple.y) {
+    if (apple_eaten(&snake, apple)) {
         score += 1;
         
+        dsquare(apple, C_BG);
         apple = rand_pos();
         dsquare(apple, C_APPLE);
         
@@ -202,12 +212,12 @@ int update_play() {
         back_snake->next = new_snake;
     }
     
+    
+    drect(0, 0, DWIDTH, 10, C_BG);
+    dprint(0, 0, C_BLACK, "Score: %i", score);
+    
     dsnake(&snake, C_SNAKE);
     dsquare(apple, C_APPLE);
-
-    drect(0, 0, DWIDTH, 20, C_BG);
-    dprint(0, 0, C_BLACK, "Score: %i", score);
-    dprint(0, 10, C_BLACK, "AX: %i AY: %i SX: %i SY: %i", apple.x, apple.y, snake.pos.x, snake.pos.y);
     
     dupdate();
     return TIMER_CONTINUE;
